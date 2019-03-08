@@ -9,12 +9,17 @@ endif()
 
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
 
-PROJECT(RapidJSON CXX)
-
 set(LIB_MAJOR_VERSION "1")
 set(LIB_MINOR_VERSION "1")
 set(LIB_PATCH_VERSION "0")
 set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
+
+if (CMAKE_VERSION VERSION_LESS 3.0)
+    PROJECT(RapidJSON CXX)
+else()
+    cmake_policy(SET CMP0048 NEW)
+    PROJECT(RapidJSON VERSION "${LIB_VERSION_STRING}" LANGUAGES CXX)
+endif()
 
 # compile in release with debug info mode by default
 if(NOT CMAKE_BUILD_TYPE)
@@ -134,11 +139,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(RAPIDJSON_BUILD_DOC)
     add_subdirectory(doc)
-endif()
 
-add_custom_target(travis_doc)
-add_custom_command(TARGET travis_doc
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/travis-doxygen.sh)
+    add_custom_target(travis_doc)
+    add_custom_command(TARGET travis_doc
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/travis-doxygen.sh)
+endif()
 
 if(RAPIDJSON_BUILD_EXAMPLES)
     add_subdirectory(example)
@@ -219,3 +224,7 @@ INSTALL(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
     DESTINATION "${CMAKE_INSTALL_DIR}"
     COMPONENT dev)
+
+
+add_library(rapidjson INTERFACE)
+target_include_directories(rapidjson INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
